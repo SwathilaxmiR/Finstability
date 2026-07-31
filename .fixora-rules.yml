@@ -1,0 +1,1135 @@
+rules:
+- id: fixora-wrapper-make-request-command-injection
+  patterns:
+  - pattern-inside: "def make_request(...):\n  ..."
+  - pattern-either:
+    - pattern: requests.get(...)
+    - pattern: $OBJ.get(...)
+    - pattern: get(...)
+  message: 'Command Injection via `url`
+
+    Vulnerable Sink: Passes untrusted data directly to `requests.get`.'
+  severity: ERROR
+  languages:
+  - python
+  metadata: &id001
+    category: security
+    technology:
+    - python
+    source: fixora-ai-analysis
+    vulnerability_type: Command Injection
+    confidence: HIGH
+    wrapper_defined_in: scripts/scrape_gov_schemes.py
+    wraps:
+    - requests.get
+    modules_used:
+    - requests
+    vulnerable_parameter: url
+    malicious_payload: <SEMGREP_TAINT_SINK>
+    exploit_explanation: Terminal sink identified for Semgrep cross-file taint engine.
+    exploit_injected_example: make_request(url = <SEMGREP_TAINT_SINK>)
+    impact_summary: Depends on the upstream caller.
+    cwe: &id002
+    - CWE-78
+    owasp: &id003
+    - A03:2021
+- id: fixora-taint-make-request-command-injection
+  mode: taint
+  pattern-sources:
+  - pattern: url
+  - pattern: request.$W(...)
+  - pattern: request.$W
+  - pattern: req.$W
+  - pattern: flask.request.$W
+  - pattern: django.http.HttpRequest.$W
+  - patterns:
+    - pattern-inside: "@$APP.$METHOD(...)\ndef $FUNC(..., $ARG, ...):\n    ..."
+    - metavariable-regex:
+        metavariable: $METHOD
+        regex: (?i)^(get|post|put|delete|patch|route)$
+    - pattern: $ARG
+  pattern-sinks:
+  - pattern: make_request(...)
+  - pattern: $OBJ.make_request(...)
+  - patterns:
+    - pattern-inside: "def make_request(...):\n  ..."
+    - pattern: requests.get(...)
+  - patterns:
+    - pattern-inside: "def make_request(...):\n  ..."
+    - pattern: response.raise_for_status()
+  message: 'Taint tracked to vulnerable wrapper `make_request`.
+
+    Command Injection via `url`
+
+    Vulnerable Sink: Passes untrusted data directly to `requests.get`.'
+  severity: ERROR
+  languages:
+  - python
+  metadata: *id001
+- id: fixora-wrapper-scrape-scheme-page-command-injection
+  pattern: "def scrape_scheme_page(...):\n  ..."
+  message: 'Command Injection via `cross_file_taint`
+
+    Vulnerable Sink: Passes untrusted data directly to `dangerous sink calls`.'
+  severity: ERROR
+  languages:
+  - python
+  metadata: &id004
+    category: security
+    technology:
+    - python
+    source: fixora-ai-analysis
+    vulnerability_type: Command Injection
+    confidence: HIGH
+    wrapper_defined_in: scripts/scrape_gov_schemes.py
+    wraps: []
+    modules_used: []
+    vulnerable_parameter: cross_file_taint
+    malicious_payload: <SEMGREP_TAINT_SINK>
+    exploit_explanation: Untrusted input flows through scrape_scheme_page in scripts/scrape_gov_schemes.py,
+      which calls make_request, reaching a dangerous sink.
+    exploit_injected_example: scrape_scheme_page(cross_file_taint = <SEMGREP_TAINT_SINK>)
+    impact_summary: Depends on the upstream caller.
+    cwe: *id002
+    owasp: *id003
+    cross_file: true
+    promoted_from: make_request
+- id: fixora-taint-scrape-scheme-page-command-injection
+  mode: taint
+  pattern-sources:
+  - pattern: url
+  - pattern: request.$W(...)
+  - pattern: request.$W
+  - pattern: req.$W
+  - pattern: flask.request.$W
+  - pattern: django.http.HttpRequest.$W
+  - patterns:
+    - pattern-inside: "@$APP.$METHOD(...)\ndef $FUNC(..., $ARG, ...):\n    ..."
+    - metavariable-regex:
+        metavariable: $METHOD
+        regex: (?i)^(get|post|put|delete|patch|route)$
+    - pattern: $ARG
+  pattern-sinks:
+  - pattern: scrape_scheme_page(...)
+  - pattern: $OBJ.scrape_scheme_page(...)
+  - patterns:
+    - pattern-inside: "def scrape_scheme_page(...):\n  ..."
+    - pattern: make_request(...)
+  message: 'Taint tracked to vulnerable wrapper `scrape_scheme_page`.
+
+    Command Injection via `cross_file_taint`
+
+    Vulnerable Sink: Passes untrusted data directly to `dangerous sink calls`.'
+  severity: ERROR
+  languages:
+  - python
+  metadata: *id004
+- id: fixora-wrapper-get-scheme-links-command-injection
+  pattern: "def get_scheme_links(...):\n  ..."
+  message: 'Command Injection via `cross_file_taint`
+
+    Vulnerable Sink: Passes untrusted data directly to `dangerous sink calls`.'
+  severity: ERROR
+  languages:
+  - python
+  metadata: &id005
+    category: security
+    technology:
+    - python
+    source: fixora-ai-analysis
+    vulnerability_type: Command Injection
+    confidence: HIGH
+    wrapper_defined_in: scripts/scrape_gov_schemes.py
+    wraps: []
+    modules_used: []
+    vulnerable_parameter: cross_file_taint
+    malicious_payload: <SEMGREP_TAINT_SINK>
+    exploit_explanation: Untrusted input flows through get_scheme_links in scripts/scrape_gov_schemes.py,
+      which calls make_request, reaching a dangerous sink.
+    exploit_injected_example: get_scheme_links(cross_file_taint = <SEMGREP_TAINT_SINK>)
+    impact_summary: Depends on the upstream caller.
+    cwe: *id002
+    owasp: *id003
+    cross_file: true
+    promoted_from: make_request
+- id: fixora-taint-get-scheme-links-command-injection
+  mode: taint
+  pattern-sources:
+  - pattern: url
+  - pattern: request.$W(...)
+  - pattern: request.$W
+  - pattern: req.$W
+  - pattern: flask.request.$W
+  - pattern: django.http.HttpRequest.$W
+  - patterns:
+    - pattern-inside: "@$APP.$METHOD(...)\ndef $FUNC(..., $ARG, ...):\n    ..."
+    - metavariable-regex:
+        metavariable: $METHOD
+        regex: (?i)^(get|post|put|delete|patch|route)$
+    - pattern: $ARG
+  pattern-sinks:
+  - pattern: get_scheme_links(...)
+  - pattern: $OBJ.get_scheme_links(...)
+  - patterns:
+    - pattern-inside: "def get_scheme_links(...):\n  ..."
+    - pattern: make_request(...)
+  message: 'Taint tracked to vulnerable wrapper `get_scheme_links`.
+
+    Command Injection via `cross_file_taint`
+
+    Vulnerable Sink: Passes untrusted data directly to `dangerous sink calls`.'
+  severity: ERROR
+  languages:
+  - python
+  metadata: *id005
+- id: fixora-wrapper-main-command-injection
+  pattern: "def main(...):\n  ..."
+  message: 'Command Injection via `cross_file_taint`
+
+    Vulnerable Sink: Passes untrusted data directly to `dangerous sink calls`.'
+  severity: ERROR
+  languages:
+  - python
+  metadata: &id006
+    category: security
+    technology:
+    - python
+    source: fixora-ai-analysis
+    vulnerability_type: Command Injection
+    confidence: HIGH
+    wrapper_defined_in: scripts/scrape_gov_schemes.py
+    wraps: []
+    modules_used: []
+    vulnerable_parameter: cross_file_taint
+    malicious_payload: <SEMGREP_TAINT_SINK>
+    exploit_explanation: Untrusted input flows through main in scripts/scrape_gov_schemes.py,
+      which calls make_request, reaching a dangerous sink.
+    exploit_injected_example: main(cross_file_taint = <SEMGREP_TAINT_SINK>)
+    impact_summary: Depends on the upstream caller.
+    cwe: *id002
+    owasp: *id003
+    cross_file: true
+    promoted_from: scrape_scheme_page
+- id: fixora-taint-main-command-injection
+  mode: taint
+  pattern-sources:
+  - pattern: url
+  - pattern: request.$W(...)
+  - pattern: request.$W
+  - pattern: req.$W
+  - pattern: flask.request.$W
+  - pattern: django.http.HttpRequest.$W
+  - patterns:
+    - pattern-inside: "@$APP.$METHOD(...)\ndef $FUNC(..., $ARG, ...):\n    ..."
+    - metavariable-regex:
+        metavariable: $METHOD
+        regex: (?i)^(get|post|put|delete|patch|route)$
+    - pattern: $ARG
+  pattern-sinks:
+  - pattern: main(...)
+  - pattern: $OBJ.main(...)
+  - patterns:
+    - pattern-inside: "def main(...):\n  ..."
+    - pattern: scrape_scheme_page(...)
+  message: 'Taint tracked to vulnerable wrapper `main`.
+
+    Command Injection via `cross_file_taint`
+
+    Vulnerable Sink: Passes untrusted data directly to `dangerous sink calls`.'
+  severity: ERROR
+  languages:
+  - python
+  metadata: *id006
+- id: fixora-wrapper-savetofirestore-missing-authentication
+  patterns:
+  - pattern-either:
+    - pattern: function saveToFirestore(...) { ... }
+    - pattern: const saveToFirestore = (...) => { ... }
+    - pattern: let saveToFirestore = (...) => { ... }
+    - pattern: var saveToFirestore = (...) => { ... }
+    - pattern: this.saveToFirestore = (...) => { ... }
+    - pattern: this.saveToFirestore = function(...) { ... }
+    - pattern: 'saveToFirestore: (...) => { ... }'
+    - pattern: 'saveToFirestore: function(...) { ... }'
+    - pattern: saveToFirestore(...) { ... }
+    - pattern: saveToFirestore = (...) => { ... }
+    - pattern: saveToFirestore = function(...) { ... }
+  - pattern-either:
+    - pattern: setDoc(...)
+    - pattern: $OBJ.setDoc(...)
+    - pattern: doc(...)
+    - pattern: $OBJ.doc(...)
+    - pattern: serverTimestamp(...)
+    - pattern: $OBJ.serverTimestamp(...)
+  message: 'Missing Authentication via `uid`
+
+    Vulnerable Sink: Passes untrusted data directly to `setDoc, doc, serverTimestamp`.'
+  severity: ERROR
+  languages:
+  - javascript
+  - typescript
+  metadata: &id007
+    category: security
+    technology:
+    - javascript
+    - typescript
+    source: fixora-ai-analysis
+    vulnerability_type: Missing Authentication
+    confidence: HIGH
+    wrapper_defined_in: src/config/firebase.ts
+    wraps:
+    - setDoc
+    - doc
+    - serverTimestamp
+    modules_used:
+    - firebase
+    vulnerable_parameter: uid
+    malicious_payload: ''
+    exploit_explanation: The function saves data to Firestore without checking if
+      the user is authenticated, allowing unauthorized access.
+    exploit_injected_example: ''
+    impact_summary: Attackers can modify user data and create unauthorized accounts.
+    cwe: &id008
+    - CWE-306
+    owasp: &id009
+    - A01:2021
+- id: fixora-taint-savetofirestore-missing-authentication
+  mode: taint
+  pattern-sources:
+  - pattern: uid
+  - pattern: req.$W
+  - pattern: request.$W
+  - pattern: req.body.$W
+  - pattern: req.query.$W
+  - pattern: req.params.$W
+  - pattern: window.location.$W
+  - pattern: document.cookie
+  - pattern: fetch(...)
+  - pattern: axios(...)
+  pattern-sinks:
+  - pattern: saveToFirestore(...)
+  - pattern: $OBJ.saveToFirestore(...)
+  - patterns:
+    - pattern-either:
+      - pattern-inside: function saveToFirestore(...) { ... }
+      - pattern-inside: const saveToFirestore = (...) => { ... }
+      - pattern-inside: let saveToFirestore = (...) => { ... }
+      - pattern-inside: var saveToFirestore = (...) => { ... }
+      - pattern-inside: this.saveToFirestore = (...) => { ... }
+      - pattern-inside: this.saveToFirestore = function(...) { ... }
+      - pattern-inside: 'saveToFirestore: (...) => { ... }'
+      - pattern-inside: 'saveToFirestore: function(...) { ... }'
+      - pattern-inside: saveToFirestore(...) { ... }
+      - pattern-inside: saveToFirestore = (...) => { ... }
+      - pattern-inside: saveToFirestore = function(...) { ... }
+    - pattern: setDoc(doc(db, 'users', uid), {...})
+  message: 'Taint tracked to vulnerable wrapper `saveToFirestore`.
+
+    Missing Authentication via `uid`
+
+    Vulnerable Sink: Passes untrusted data directly to `setDoc, doc, serverTimestamp`.'
+  severity: ERROR
+  languages:
+  - javascript
+  - typescript
+  metadata: *id007
+- id: fixora-wrapper-checkuserexists-missing-authentication
+  patterns:
+  - pattern-either:
+    - pattern: function checkUserExists(...) { ... }
+    - pattern: const checkUserExists = (...) => { ... }
+    - pattern: let checkUserExists = (...) => { ... }
+    - pattern: var checkUserExists = (...) => { ... }
+    - pattern: this.checkUserExists = (...) => { ... }
+    - pattern: this.checkUserExists = function(...) { ... }
+    - pattern: 'checkUserExists: (...) => { ... }'
+    - pattern: 'checkUserExists: function(...) { ... }'
+    - pattern: checkUserExists(...) { ... }
+    - pattern: checkUserExists = (...) => { ... }
+    - pattern: checkUserExists = function(...) { ... }
+  - pattern-either:
+    - pattern: getDoc(...)
+    - pattern: $OBJ.getDoc(...)
+    - pattern: doc(...)
+    - pattern: $OBJ.doc(...)
+  message: 'Missing Authentication via `uid`
+
+    Vulnerable Sink: Passes untrusted data directly to `getDoc, doc`.'
+  severity: ERROR
+  languages:
+  - javascript
+  - typescript
+  metadata: &id010
+    category: security
+    technology:
+    - javascript
+    - typescript
+    source: fixora-ai-analysis
+    vulnerability_type: Missing Authentication
+    confidence: HIGH
+    wrapper_defined_in: src/config/firebase.ts
+    wraps:
+    - getDoc
+    - doc
+    modules_used:
+    - firebase
+    vulnerable_parameter: uid
+    malicious_payload: ''
+    exploit_explanation: The function checks if a user exists without checking if
+      the user is authenticated, allowing unauthorized access.
+    exploit_injected_example: ''
+    impact_summary: Attackers can access user data and check if a user exists without
+      being authenticated.
+    cwe: *id008
+    owasp: *id009
+- id: fixora-taint-checkuserexists-missing-authentication
+  mode: taint
+  pattern-sources:
+  - pattern: uid
+  - pattern: req.$W
+  - pattern: request.$W
+  - pattern: req.body.$W
+  - pattern: req.query.$W
+  - pattern: req.params.$W
+  - pattern: window.location.$W
+  - pattern: document.cookie
+  - pattern: fetch(...)
+  - pattern: axios(...)
+  pattern-sinks:
+  - pattern: checkUserExists(...)
+  - pattern: $OBJ.checkUserExists(...)
+  - patterns:
+    - pattern-either:
+      - pattern-inside: function checkUserExists(...) { ... }
+      - pattern-inside: const checkUserExists = (...) => { ... }
+      - pattern-inside: let checkUserExists = (...) => { ... }
+      - pattern-inside: var checkUserExists = (...) => { ... }
+      - pattern-inside: this.checkUserExists = (...) => { ... }
+      - pattern-inside: this.checkUserExists = function(...) { ... }
+      - pattern-inside: 'checkUserExists: (...) => { ... }'
+      - pattern-inside: 'checkUserExists: function(...) { ... }'
+      - pattern-inside: checkUserExists(...) { ... }
+      - pattern-inside: checkUserExists = (...) => { ... }
+      - pattern-inside: checkUserExists = function(...) { ... }
+    - pattern: getDoc(doc(db, 'users', uid))
+  message: 'Taint tracked to vulnerable wrapper `checkUserExists`.
+
+    Missing Authentication via `uid`
+
+    Vulnerable Sink: Passes untrusted data directly to `getDoc, doc`.'
+  severity: ERROR
+  languages:
+  - javascript
+  - typescript
+  metadata: *id010
+- id: fixora-wrapper-getuserprofile-missing-authentication
+  patterns:
+  - pattern-either:
+    - pattern: function getUserProfile(...) { ... }
+    - pattern: const getUserProfile = (...) => { ... }
+    - pattern: let getUserProfile = (...) => { ... }
+    - pattern: var getUserProfile = (...) => { ... }
+    - pattern: this.getUserProfile = (...) => { ... }
+    - pattern: this.getUserProfile = function(...) { ... }
+    - pattern: 'getUserProfile: (...) => { ... }'
+    - pattern: 'getUserProfile: function(...) { ... }'
+    - pattern: getUserProfile(...) { ... }
+    - pattern: getUserProfile = (...) => { ... }
+    - pattern: getUserProfile = function(...) { ... }
+  - pattern-either:
+    - pattern: getDoc(...)
+    - pattern: $OBJ.getDoc(...)
+    - pattern: doc(...)
+    - pattern: $OBJ.doc(...)
+  message: 'Missing Authentication via `uid`
+
+    Vulnerable Sink: Passes untrusted data directly to `getDoc, doc`.'
+  severity: ERROR
+  languages:
+  - javascript
+  - typescript
+  metadata: &id011
+    category: security
+    technology:
+    - javascript
+    - typescript
+    source: fixora-ai-analysis
+    vulnerability_type: Missing Authentication
+    confidence: HIGH
+    wrapper_defined_in: src/config/firebase.ts
+    wraps:
+    - getDoc
+    - doc
+    modules_used:
+    - firebase
+    vulnerable_parameter: uid
+    malicious_payload: ''
+    exploit_explanation: The function gets a user's profile without checking if the
+      user is authenticated, allowing unauthorized access.
+    exploit_injected_example: ''
+    impact_summary: Attackers can access user data and get a user's profile without
+      being authenticated.
+    cwe: *id008
+    owasp: *id009
+- id: fixora-taint-getuserprofile-missing-authentication
+  mode: taint
+  pattern-sources:
+  - pattern: uid
+  - pattern: req.$W
+  - pattern: request.$W
+  - pattern: req.body.$W
+  - pattern: req.query.$W
+  - pattern: req.params.$W
+  - pattern: window.location.$W
+  - pattern: document.cookie
+  - pattern: fetch(...)
+  - pattern: axios(...)
+  pattern-sinks:
+  - pattern: getUserProfile(...)
+  - pattern: $OBJ.getUserProfile(...)
+  - patterns:
+    - pattern-either:
+      - pattern-inside: function getUserProfile(...) { ... }
+      - pattern-inside: const getUserProfile = (...) => { ... }
+      - pattern-inside: let getUserProfile = (...) => { ... }
+      - pattern-inside: var getUserProfile = (...) => { ... }
+      - pattern-inside: this.getUserProfile = (...) => { ... }
+      - pattern-inside: this.getUserProfile = function(...) { ... }
+      - pattern-inside: 'getUserProfile: (...) => { ... }'
+      - pattern-inside: 'getUserProfile: function(...) { ... }'
+      - pattern-inside: getUserProfile(...) { ... }
+      - pattern-inside: getUserProfile = (...) => { ... }
+      - pattern-inside: getUserProfile = function(...) { ... }
+    - pattern: getDoc(doc(db, 'users', uid))
+  message: 'Taint tracked to vulnerable wrapper `getUserProfile`.
+
+    Missing Authentication via `uid`
+
+    Vulnerable Sink: Passes untrusted data directly to `getDoc, doc`.'
+  severity: ERROR
+  languages:
+  - javascript
+  - typescript
+  metadata: *id011
+- id: fixora-wrapper-sendotptophone-input-validation-failure
+  patterns:
+  - pattern-either:
+    - pattern: function sendOtpToPhone(...) { ... }
+    - pattern: const sendOtpToPhone = (...) => { ... }
+    - pattern: let sendOtpToPhone = (...) => { ... }
+    - pattern: var sendOtpToPhone = (...) => { ... }
+    - pattern: this.sendOtpToPhone = (...) => { ... }
+    - pattern: this.sendOtpToPhone = function(...) { ... }
+    - pattern: 'sendOtpToPhone: (...) => { ... }'
+    - pattern: 'sendOtpToPhone: function(...) { ... }'
+    - pattern: sendOtpToPhone(...) { ... }
+    - pattern: sendOtpToPhone = (...) => { ... }
+    - pattern: sendOtpToPhone = function(...) { ... }
+  - pattern-either:
+    - pattern: signInWithPhoneNumber(...)
+    - pattern: $OBJ.signInWithPhoneNumber(...)
+  message: 'Input Validation Failure via `phoneNumber`
+
+    Vulnerable Sink: Passes untrusted data directly to `signInWithPhoneNumber`.'
+  severity: WARNING
+  languages:
+  - javascript
+  - typescript
+  metadata: &id012
+    category: security
+    technology:
+    - javascript
+    - typescript
+    source: fixora-ai-analysis
+    vulnerability_type: Input Validation Failure
+    confidence: MEDIUM
+    wrapper_defined_in: src/config/firebase.ts
+    wraps:
+    - signInWithPhoneNumber
+    modules_used:
+    - firebase
+    vulnerable_parameter: phoneNumber
+    malicious_payload: '+912345678901'
+    exploit_explanation: An attacker could potentially manipulate the phone number
+      input to bypass authentication or cause unintended behavior.
+    exploit_injected_example: sendOtpToPhone(phoneNumber = +912345678901)
+    impact_summary: Attackers could potentially bypass authentication or cause unintended
+      behavior, leading to unauthorized access or data breaches.
+    cwe: &id014
+    - CWE-400
+    - CWE-1333
+    owasp: &id015
+    - A03:2021
+- id: fixora-taint-sendotptophone-input-validation-failure
+  mode: taint
+  pattern-sources:
+  - pattern: phoneNumber
+  - pattern: req.$W
+  - pattern: request.$W
+  - pattern: req.body.$W
+  - pattern: req.query.$W
+  - pattern: req.params.$W
+  - pattern: window.location.$W
+  - pattern: document.cookie
+  - pattern: fetch(...)
+  - pattern: axios(...)
+  pattern-sinks:
+  - pattern: sendOtpToPhone(...)
+  - pattern: $OBJ.sendOtpToPhone(...)
+  - patterns:
+    - pattern-either:
+      - pattern-inside: function sendOtpToPhone(...) { ... }
+      - pattern-inside: const sendOtpToPhone = (...) => { ... }
+      - pattern-inside: let sendOtpToPhone = (...) => { ... }
+      - pattern-inside: var sendOtpToPhone = (...) => { ... }
+      - pattern-inside: this.sendOtpToPhone = (...) => { ... }
+      - pattern-inside: this.sendOtpToPhone = function(...) { ... }
+      - pattern-inside: 'sendOtpToPhone: (...) => { ... }'
+      - pattern-inside: 'sendOtpToPhone: function(...) { ... }'
+      - pattern-inside: sendOtpToPhone(...) { ... }
+      - pattern-inside: sendOtpToPhone = (...) => { ... }
+      - pattern-inside: sendOtpToPhone = function(...) { ... }
+    - pattern: signInWithPhoneNumber
+  message: 'Taint tracked to vulnerable wrapper `sendOtpToPhone`.
+
+    Input Validation Failure via `phoneNumber`
+
+    Vulnerable Sink: Passes untrusted data directly to `signInWithPhoneNumber`.'
+  severity: WARNING
+  languages:
+  - javascript
+  - typescript
+  metadata: *id012
+  pattern-sanitizers:
+  - pattern: phoneNumber.startsWith('+91')
+- id: fixora-wrapper-signinwithgooglecredential-missing-authentication
+  patterns:
+  - pattern-either:
+    - pattern: function signInWithGoogleCredential(...) { ... }
+    - pattern: const signInWithGoogleCredential = (...) => { ... }
+    - pattern: let signInWithGoogleCredential = (...) => { ... }
+    - pattern: var signInWithGoogleCredential = (...) => { ... }
+    - pattern: this.signInWithGoogleCredential = (...) => { ... }
+    - pattern: this.signInWithGoogleCredential = function(...) { ... }
+    - pattern: 'signInWithGoogleCredential: (...) => { ... }'
+    - pattern: 'signInWithGoogleCredential: function(...) { ... }'
+    - pattern: signInWithGoogleCredential(...) { ... }
+    - pattern: signInWithGoogleCredential = (...) => { ... }
+    - pattern: signInWithGoogleCredential = function(...) { ... }
+  - pattern-either:
+    - pattern: signInWithCredential(...)
+    - pattern: $OBJ.signInWithCredential(...)
+  message: 'Missing Authentication via `idToken`
+
+    Vulnerable Sink: Passes untrusted data directly to `signInWithCredential`.'
+  severity: ERROR
+  languages:
+  - javascript
+  - typescript
+  metadata: &id013
+    category: security
+    technology:
+    - javascript
+    - typescript
+    source: fixora-ai-analysis
+    vulnerability_type: Missing Authentication
+    confidence: HIGH
+    wrapper_defined_in: src/config/firebase.ts
+    wraps:
+    - signInWithCredential
+    modules_used:
+    - firebase
+    vulnerable_parameter: idToken
+    malicious_payload: ''
+    exploit_explanation: An attacker could potentially manipulate the Google credential
+      input to bypass authentication or cause unintended behavior.
+    exploit_injected_example: ''
+    impact_summary: Attackers could potentially bypass authentication or cause unintended
+      behavior, leading to unauthorized access or data breaches.
+    cwe: *id008
+    owasp: *id009
+- id: fixora-taint-signinwithgooglecredential-missing-authentication
+  mode: taint
+  pattern-sources:
+  - pattern: idToken
+  - pattern: req.$W
+  - pattern: request.$W
+  - pattern: req.body.$W
+  - pattern: req.query.$W
+  - pattern: req.params.$W
+  - pattern: window.location.$W
+  - pattern: document.cookie
+  - pattern: fetch(...)
+  - pattern: axios(...)
+  pattern-sinks:
+  - pattern: signInWithGoogleCredential(...)
+  - pattern: $OBJ.signInWithGoogleCredential(...)
+  - patterns:
+    - pattern-either:
+      - pattern-inside: function signInWithGoogleCredential(...) { ... }
+      - pattern-inside: const signInWithGoogleCredential = (...) => { ... }
+      - pattern-inside: let signInWithGoogleCredential = (...) => { ... }
+      - pattern-inside: var signInWithGoogleCredential = (...) => { ... }
+      - pattern-inside: this.signInWithGoogleCredential = (...) => { ... }
+      - pattern-inside: this.signInWithGoogleCredential = function(...) { ... }
+      - pattern-inside: 'signInWithGoogleCredential: (...) => { ... }'
+      - pattern-inside: 'signInWithGoogleCredential: function(...) { ... }'
+      - pattern-inside: signInWithGoogleCredential(...) { ... }
+      - pattern-inside: signInWithGoogleCredential = (...) => { ... }
+      - pattern-inside: signInWithGoogleCredential = function(...) { ... }
+    - pattern: signInWithCredential
+  message: 'Taint tracked to vulnerable wrapper `signInWithGoogleCredential`.
+
+    Missing Authentication via `idToken`
+
+    Vulnerable Sink: Passes untrusted data directly to `signInWithCredential`.'
+  severity: ERROR
+  languages:
+  - javascript
+  - typescript
+  metadata: *id013
+- id: fixora-wrapper-loadfinancialprofile-input-validation-failure
+  patterns:
+  - pattern-either:
+    - pattern: function loadFinancialProfile(...) { ... }
+    - pattern: const loadFinancialProfile = (...) => { ... }
+    - pattern: let loadFinancialProfile = (...) => { ... }
+    - pattern: var loadFinancialProfile = (...) => { ... }
+    - pattern: this.loadFinancialProfile = (...) => { ... }
+    - pattern: this.loadFinancialProfile = function(...) { ... }
+    - pattern: 'loadFinancialProfile: (...) => { ... }'
+    - pattern: 'loadFinancialProfile: function(...) { ... }'
+    - pattern: loadFinancialProfile(...) { ... }
+    - pattern: loadFinancialProfile = (...) => { ... }
+    - pattern: loadFinancialProfile = function(...) { ... }
+  - pattern-either:
+    - pattern: AsyncStorage.getItem(...)
+    - pattern: $OBJ.getItem(...)
+    - pattern: getItem(...)
+  message: 'Input Validation Failure via `data`
+
+    Vulnerable Sink: Passes untrusted data directly to `AsyncStorage.getItem`.'
+  severity: WARNING
+  languages:
+  - javascript
+  - typescript
+  metadata: &id016
+    category: security
+    technology:
+    - javascript
+    - typescript
+    source: fixora-ai-analysis
+    vulnerability_type: Input Validation Failure
+    confidence: MEDIUM
+    wrapper_defined_in: src/screens/DashboardScreen.tsx
+    wraps:
+    - AsyncStorage.getItem
+    modules_used:
+    - '@react-native-async-storage/async-storage'
+    vulnerable_parameter: data
+    malicious_payload: '{"monthlyIncome": "abc"}'
+    exploit_explanation: The attacker-controlled data is parsed into a JSON object
+      without validation, potentially causing errors or unexpected behavior.
+    exploit_injected_example: 'loadFinancialProfile(data = {"monthlyIncome": "abc"})'
+    impact_summary: Attackers can cause errors or unexpected behavior by providing
+      malformed JSON data.
+    cwe: *id014
+    owasp: *id015
+- id: fixora-taint-loadfinancialprofile-input-validation-failure
+  mode: taint
+  pattern-sources:
+  - pattern: AsyncStorage.getItem
+  - pattern: req.$W
+  - pattern: request.$W
+  - pattern: req.body.$W
+  - pattern: req.query.$W
+  - pattern: req.params.$W
+  - pattern: window.location.$W
+  - pattern: document.cookie
+  - pattern: fetch(...)
+  - pattern: axios(...)
+  pattern-sinks:
+  - pattern: loadFinancialProfile(...)
+  - pattern: $OBJ.loadFinancialProfile(...)
+  - patterns:
+    - pattern-either:
+      - pattern-inside: function loadFinancialProfile(...) { ... }
+      - pattern-inside: const loadFinancialProfile = (...) => { ... }
+      - pattern-inside: let loadFinancialProfile = (...) => { ... }
+      - pattern-inside: var loadFinancialProfile = (...) => { ... }
+      - pattern-inside: this.loadFinancialProfile = (...) => { ... }
+      - pattern-inside: this.loadFinancialProfile = function(...) { ... }
+      - pattern-inside: 'loadFinancialProfile: (...) => { ... }'
+      - pattern-inside: 'loadFinancialProfile: function(...) { ... }'
+      - pattern-inside: loadFinancialProfile(...) { ... }
+      - pattern-inside: loadFinancialProfile = (...) => { ... }
+      - pattern-inside: loadFinancialProfile = function(...) { ... }
+    - pattern: JSON.parse
+  message: 'Taint tracked to vulnerable wrapper `loadFinancialProfile`.
+
+    Input Validation Failure via `data`
+
+    Vulnerable Sink: Passes untrusted data directly to `AsyncStorage.getItem`.'
+  severity: WARNING
+  languages:
+  - javascript
+  - typescript
+  metadata: *id016
+  pattern-sanitizers:
+  - pattern: JSON.parse with try-catch
+- id: fixora-wrapper-handlesave-input-validation-failure
+  patterns:
+  - pattern-either:
+    - pattern: function handleSave(...) { ... }
+    - pattern: const handleSave = (...) => { ... }
+    - pattern: let handleSave = (...) => { ... }
+    - pattern: var handleSave = (...) => { ... }
+    - pattern: this.handleSave = (...) => { ... }
+    - pattern: this.handleSave = function(...) { ... }
+    - pattern: 'handleSave: (...) => { ... }'
+    - pattern: 'handleSave: function(...) { ... }'
+    - pattern: handleSave(...) { ... }
+    - pattern: handleSave = (...) => { ... }
+    - pattern: handleSave = function(...) { ... }
+  - pattern-either:
+    - pattern: AsyncStorage.setItem(...)
+    - pattern: $OBJ.setItem(...)
+    - pattern: setItem(...)
+  message: 'Input Validation Failure via `monthlyIncome`
+
+    Vulnerable Sink: Passes untrusted data directly to `AsyncStorage.setItem`.'
+  severity: WARNING
+  languages:
+  - javascript
+  - typescript
+  metadata: &id017
+    category: security
+    technology:
+    - javascript
+    - typescript
+    source: fixora-ai-analysis
+    vulnerability_type: Input Validation Failure
+    confidence: MEDIUM
+    wrapper_defined_in: src/screens/FinancialInputScreen.tsx
+    wraps:
+    - AsyncStorage.setItem
+    modules_used:
+    - '@react-native-async-storage/async-storage'
+    vulnerable_parameter: monthlyIncome
+    malicious_payload: '{"monthlyIncome": "abc"}'
+    exploit_explanation: The attacker can store arbitrary data in the financial profile,
+      potentially leading to data corruption or security issues.
+    exploit_injected_example: 'handleSave(monthlyIncome = {"monthlyIncome": "abc"})'
+    impact_summary: Attackers can store malicious data in the financial profile, potentially
+      leading to data corruption or security issues.
+    cwe: *id014
+    owasp: *id015
+- id: fixora-taint-handlesave-input-validation-failure
+  mode: taint
+  pattern-sources:
+  - pattern: monthlyIncome
+  - pattern: req.$W
+  - pattern: request.$W
+  - pattern: req.body.$W
+  - pattern: req.query.$W
+  - pattern: req.params.$W
+  - pattern: window.location.$W
+  - pattern: document.cookie
+  - pattern: fetch(...)
+  - pattern: axios(...)
+  pattern-sinks:
+  - pattern: handleSave(...)
+  - pattern: $OBJ.handleSave(...)
+  - patterns:
+    - pattern-either:
+      - pattern-inside: function handleSave(...) { ... }
+      - pattern-inside: const handleSave = (...) => { ... }
+      - pattern-inside: let handleSave = (...) => { ... }
+      - pattern-inside: var handleSave = (...) => { ... }
+      - pattern-inside: this.handleSave = (...) => { ... }
+      - pattern-inside: this.handleSave = function(...) { ... }
+      - pattern-inside: 'handleSave: (...) => { ... }'
+      - pattern-inside: 'handleSave: function(...) { ... }'
+      - pattern-inside: handleSave(...) { ... }
+      - pattern-inside: handleSave = (...) => { ... }
+      - pattern-inside: handleSave = function(...) { ... }
+    - pattern: AsyncStorage.setItem
+  message: 'Taint tracked to vulnerable wrapper `handleSave`.
+
+    Input Validation Failure via `monthlyIncome`
+
+    Vulnerable Sink: Passes untrusted data directly to `AsyncStorage.setItem`.'
+  severity: WARNING
+  languages:
+  - javascript
+  - typescript
+  metadata: *id017
+  pattern-sanitizers:
+  - pattern: parseFloat
+- id: fixora-wrapper-loadexistingprofile-input-validation-failure
+  patterns:
+  - pattern-either:
+    - pattern: function loadExistingProfile(...) { ... }
+    - pattern: const loadExistingProfile = (...) => { ... }
+    - pattern: let loadExistingProfile = (...) => { ... }
+    - pattern: var loadExistingProfile = (...) => { ... }
+    - pattern: this.loadExistingProfile = (...) => { ... }
+    - pattern: this.loadExistingProfile = function(...) { ... }
+    - pattern: 'loadExistingProfile: (...) => { ... }'
+    - pattern: 'loadExistingProfile: function(...) { ... }'
+    - pattern: loadExistingProfile(...) { ... }
+    - pattern: loadExistingProfile = (...) => { ... }
+    - pattern: loadExistingProfile = function(...) { ... }
+  - pattern-either:
+    - pattern: AsyncStorage.getItem(...)
+    - pattern: $OBJ.getItem(...)
+    - pattern: getItem(...)
+  message: 'Input Validation Failure via `data`
+
+    Vulnerable Sink: Passes untrusted data directly to `AsyncStorage.getItem`.'
+  severity: WARNING
+  languages:
+  - javascript
+  - typescript
+  metadata: &id018
+    category: security
+    technology:
+    - javascript
+    - typescript
+    source: fixora-ai-analysis
+    vulnerability_type: Input Validation Failure
+    confidence: MEDIUM
+    wrapper_defined_in: src/screens/FinancialInputScreen.tsx
+    wraps:
+    - AsyncStorage.getItem
+    modules_used:
+    - '@react-native-async-storage/async-storage'
+    vulnerable_parameter: data
+    malicious_payload: '{"monthlyIncome": "abc"}'
+    exploit_explanation: The attacker can store arbitrary data in the financial profile,
+      potentially leading to data corruption or security issues.
+    exploit_injected_example: 'loadExistingProfile(data = {"monthlyIncome": "abc"})'
+    impact_summary: Attackers can store malicious data in the financial profile, potentially
+      leading to data corruption or security issues.
+    cwe: *id014
+    owasp: *id015
+- id: fixora-taint-loadexistingprofile-input-validation-failure
+  mode: taint
+  pattern-sources:
+  - pattern: data
+  - pattern: req.$W
+  - pattern: request.$W
+  - pattern: req.body.$W
+  - pattern: req.query.$W
+  - pattern: req.params.$W
+  - pattern: window.location.$W
+  - pattern: document.cookie
+  - pattern: fetch(...)
+  - pattern: axios(...)
+  pattern-sinks:
+  - pattern: loadExistingProfile(...)
+  - pattern: $OBJ.loadExistingProfile(...)
+  - patterns:
+    - pattern-either:
+      - pattern-inside: function loadExistingProfile(...) { ... }
+      - pattern-inside: const loadExistingProfile = (...) => { ... }
+      - pattern-inside: let loadExistingProfile = (...) => { ... }
+      - pattern-inside: var loadExistingProfile = (...) => { ... }
+      - pattern-inside: this.loadExistingProfile = (...) => { ... }
+      - pattern-inside: this.loadExistingProfile = function(...) { ... }
+      - pattern-inside: 'loadExistingProfile: (...) => { ... }'
+      - pattern-inside: 'loadExistingProfile: function(...) { ... }'
+      - pattern-inside: loadExistingProfile(...) { ... }
+      - pattern-inside: loadExistingProfile = (...) => { ... }
+      - pattern-inside: loadExistingProfile = function(...) { ... }
+    - pattern: JSON.parse
+  message: 'Taint tracked to vulnerable wrapper `loadExistingProfile`.
+
+    Input Validation Failure via `data`
+
+    Vulnerable Sink: Passes untrusted data directly to `AsyncStorage.getItem`.'
+  severity: WARNING
+  languages:
+  - javascript
+  - typescript
+  metadata: *id018
+  pattern-sanitizers:
+  - pattern: JSON.parse
+- id: fixora-wrapper-saveuserprofile-input-validation-failure
+  patterns:
+  - pattern-either:
+    - pattern: function saveUserProfile(...) { ... }
+    - pattern: const saveUserProfile = (...) => { ... }
+    - pattern: let saveUserProfile = (...) => { ... }
+    - pattern: var saveUserProfile = (...) => { ... }
+    - pattern: this.saveUserProfile = (...) => { ... }
+    - pattern: this.saveUserProfile = function(...) { ... }
+    - pattern: 'saveUserProfile: (...) => { ... }'
+    - pattern: 'saveUserProfile: function(...) { ... }'
+    - pattern: saveUserProfile(...) { ... }
+    - pattern: saveUserProfile = (...) => { ... }
+    - pattern: saveUserProfile = function(...) { ... }
+  - pattern-either:
+    - pattern: AsyncStorage.multiSet(...)
+    - pattern: $OBJ.multiSet(...)
+    - pattern: multiSet(...)
+  message: 'Input Validation Failure via `user`
+
+    Vulnerable Sink: Passes untrusted data directly to `AsyncStorage.multiSet`.'
+  severity: WARNING
+  languages:
+  - javascript
+  - typescript
+  metadata: &id019
+    category: security
+    technology:
+    - javascript
+    - typescript
+    source: fixora-ai-analysis
+    vulnerability_type: Input Validation Failure
+    confidence: MEDIUM
+    wrapper_defined_in: src/services/authService.ts
+    wraps:
+    - AsyncStorage.multiSet
+    modules_used:
+    - '@react-native-async-storage/async-storage'
+    vulnerable_parameter: user
+    malicious_payload: <malicious_data>
+    exploit_explanation: The attacker-controlled user object is saved to storage without
+      validation, potentially allowing for malicious data to be stored.
+    exploit_injected_example: saveUserProfile(user = <malicious_data>)
+    impact_summary: Attackers can store malicious data in the user's storage, potentially
+      leading to security issues or data corruption.
+    cwe: *id014
+    owasp: *id015
+- id: fixora-taint-saveuserprofile-input-validation-failure
+  mode: taint
+  pattern-sources:
+  - pattern: user
+  - pattern: req.$W
+  - pattern: request.$W
+  - pattern: req.body.$W
+  - pattern: req.query.$W
+  - pattern: req.params.$W
+  - pattern: window.location.$W
+  - pattern: document.cookie
+  - pattern: fetch(...)
+  - pattern: axios(...)
+  pattern-sinks:
+  - pattern: saveUserProfile(...)
+  - pattern: $OBJ.saveUserProfile(...)
+  - patterns:
+    - pattern-either:
+      - pattern-inside: function saveUserProfile(...) { ... }
+      - pattern-inside: const saveUserProfile = (...) => { ... }
+      - pattern-inside: let saveUserProfile = (...) => { ... }
+      - pattern-inside: var saveUserProfile = (...) => { ... }
+      - pattern-inside: this.saveUserProfile = (...) => { ... }
+      - pattern-inside: this.saveUserProfile = function(...) { ... }
+      - pattern-inside: 'saveUserProfile: (...) => { ... }'
+      - pattern-inside: 'saveUserProfile: function(...) { ... }'
+      - pattern-inside: saveUserProfile(...) { ... }
+      - pattern-inside: saveUserProfile = (...) => { ... }
+      - pattern-inside: saveUserProfile = function(...) { ... }
+    - pattern: AsyncStorage.multiSet
+  message: 'Taint tracked to vulnerable wrapper `saveUserProfile`.
+
+    Input Validation Failure via `user`
+
+    Vulnerable Sink: Passes untrusted data directly to `AsyncStorage.multiSet`.'
+  severity: WARNING
+  languages:
+  - javascript
+  - typescript
+  metadata: *id019
+  pattern-sanitizers:
+  - pattern: validation functions
+- id: fixora-wrapper-setloggedin-missing-authentication
+  patterns:
+  - pattern-either:
+    - pattern: function setLoggedIn(...) { ... }
+    - pattern: const setLoggedIn = (...) => { ... }
+    - pattern: let setLoggedIn = (...) => { ... }
+    - pattern: var setLoggedIn = (...) => { ... }
+    - pattern: this.setLoggedIn = (...) => { ... }
+    - pattern: this.setLoggedIn = function(...) { ... }
+    - pattern: 'setLoggedIn: (...) => { ... }'
+    - pattern: 'setLoggedIn: function(...) { ... }'
+    - pattern: setLoggedIn(...) { ... }
+    - pattern: setLoggedIn = (...) => { ... }
+    - pattern: setLoggedIn = function(...) { ... }
+  - pattern-either:
+    - pattern: AsyncStorage.setItem(...)
+    - pattern: $OBJ.setItem(...)
+    - pattern: setItem(...)
+  message: 'Missing Authentication via `phoneNumber`
+
+    Vulnerable Sink: Passes untrusted data directly to `AsyncStorage.setItem`.'
+  severity: ERROR
+  languages:
+  - javascript
+  - typescript
+  metadata: &id020
+    category: security
+    technology:
+    - javascript
+    - typescript
+    source: fixora-ai-analysis
+    vulnerability_type: Missing Authentication
+    confidence: HIGH
+    wrapper_defined_in: src/services/authService.ts
+    wraps:
+    - AsyncStorage.setItem
+    modules_used:
+    - '@react-native-async-storage/async-storage'
+    vulnerable_parameter: phoneNumber
+    malicious_payload: ''
+    exploit_explanation: The function sets the logged in status without checking if
+      the user is authenticated, potentially allowing unauthorized access.
+    exploit_injected_example: ''
+    impact_summary: Attackers can gain unauthorized access to the user's account by
+      setting the logged in status without authentication.
+    cwe: *id008
+    owasp: *id009
+- id: fixora-taint-setloggedin-missing-authentication
+  mode: taint
+  pattern-sources:
+  - pattern: phoneNumber
+  - pattern: req.$W
+  - pattern: request.$W
+  - pattern: req.body.$W
+  - pattern: req.query.$W
+  - pattern: req.params.$W
+  - pattern: window.location.$W
+  - pattern: document.cookie
+  - pattern: fetch(...)
+  - pattern: axios(...)
+  pattern-sinks:
+  - pattern: setLoggedIn(...)
+  - pattern: $OBJ.setLoggedIn(...)
+  - patterns:
+    - pattern-either:
+      - pattern-inside: function setLoggedIn(...) { ... }
+      - pattern-inside: const setLoggedIn = (...) => { ... }
+      - pattern-inside: let setLoggedIn = (...) => { ... }
+      - pattern-inside: var setLoggedIn = (...) => { ... }
+      - pattern-inside: this.setLoggedIn = (...) => { ... }
+      - pattern-inside: this.setLoggedIn = function(...) { ... }
+      - pattern-inside: 'setLoggedIn: (...) => { ... }'
+      - pattern-inside: 'setLoggedIn: function(...) { ... }'
+      - pattern-inside: setLoggedIn(...) { ... }
+      - pattern-inside: setLoggedIn = (...) => { ... }
+      - pattern-inside: setLoggedIn = function(...) { ... }
+    - pattern: AsyncStorage.setItem
+  message: 'Taint tracked to vulnerable wrapper `setLoggedIn`.
+
+    Missing Authentication via `phoneNumber`
+
+    Vulnerable Sink: Passes untrusted data directly to `AsyncStorage.setItem`.'
+  severity: ERROR
+  languages:
+  - javascript
+  - typescript
+  metadata: *id020
+  pattern-sanitizers:
+  - pattern: authentication checks
